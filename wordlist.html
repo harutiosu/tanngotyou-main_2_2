@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>単語一覧</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; padding-bottom: 50px; padding-top: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    #backBtn {
+    position: fixed;
+    top: 10px;       /* 左上に固定 */
+    left: 10px;
+    width: 40px;     /* 正方形にして丸くする */
+    height: 40px;
+    border-radius: 50%; /* 丸ボタン */
+    border: none;
+    background-color: #eee; /* 背景色はお好みで */
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s;
+    }
+    #backBtn:hover {
+      background-color: #ddd; /* ホバー時の色変化 */
+    }
+    #jumpEnglishBtn, #jumpKobunBtn {
+    position: fixed;
+    bottom: 10px;
+    padding: 8px 16px;
+    font-size: 20px;
+    margin: 10px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    }
+    #jumpEnglishBtn:hover, #jumpKobunBtn:hover{  background-color: #45a049;  }
+    #jumpKobunBtn {
+      right: 10px;
+    }
+    #jumpEnglishBtn {
+      right: 180px;
+    }
+
+    input[type="text"] {
+    width: 100%;
+    max-width: 500px;
+    font-size: 18px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 600px) {
+    input[type="text"] {
+      font-size: 20px;
+      padding: 14px;
+    }
+  }
+<!--aa-->
+
+  </style>
+</head>
+<body>
+  <div style="font-size: 24px; margin-bottom: 20px; color:#333; text-align: center;">
+  <h1>単語一覧</h1>
+  </div>
+
+  <!--
+  <h1>英単語</h1>
+  <input type="text" id="searchEnglish" placeholder="🔎英単語を検索..." style="margin-bottom:10px;">
+
+  <div style="margin-bottom:10px;">
+    <label><input type="checkbox" id="chkEn" checked> 英単語</label>
+    <label><input type="checkbox" id="chkJp" checked> 日本語訳</label>
+    <label><input type="checkbox" id="chkDef" checked> 説明</label>
+  </div>
+
+  
+  <table id="wordTableEnglish">
+    <thead>
+      <tr>
+        <th>英単語</th>
+        <th>日本語訳</th>
+        <th>説明</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+-->
+
+  <!-- 戻るボタン -->
+  <button id="backBtn" onclick="location.href='index.html'">＜</button>
+
+  <script type="module">
+    const response = await fetch("wordlist_en.json");
+    const wordPairs = await response.json();
+
+    // 英単語テーブルを埋める
+    const tbodyEng = document.querySelector("#wordTableEnglish tbody");
+    wordPairs.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.en}</td>
+        <td>${item.jp}</td>
+        <td>${item.def}</td>
+      `;
+      tbodyEng.appendChild(tr);
+    });
+
+    // 検索処理を関数化
+    function filterEnglishTable() {
+      const keyword = document.getElementById("searchEnglish").value.trim().toLowerCase();
+      const rows = document.querySelectorAll("#wordTableEnglish tbody tr");
+
+      const chkEn = document.getElementById("chkEn").checked;
+      const chkJp = document.getElementById("chkJp").checked;
+      const chkDef = document.getElementById("chkDef").checked;
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+
+        // 入力が空なら必ず表示
+        if (keyword === "") {
+          row.style.display = "";
+          return;
+        }
+
+        let match = false;
+        if (chkEn && cells[0].textContent.toLowerCase().includes(keyword)) match = true;
+        if (chkJp && cells[1].textContent.toLowerCase().includes(keyword)) match = true;
+        if (chkDef && cells[2].textContent.toLowerCase().includes(keyword)) match = true;
+
+        row.style.display = match ? "" : "none";
+      });
+    }
+
+    // イベント登録：検索ボックス入力時
+    document.getElementById("searchEnglish").addEventListener("input", filterEnglishTable);
+
+    // イベント登録：チェックボックス変更時
+    ["chkEn","chkJp","chkDef"].forEach(id => {
+      document.getElementById(id).addEventListener("change", filterEnglishTable);
+    });
+
+    // 検索処理を関数化
+    function filterKobunTable() {
+      const keyword = document.getElementById("searchKobun").value.trim().toLowerCase();
+      const rows = document.querySelectorAll("#wordTableKobun tbody tr");
+
+      const chkKoWord = document.getElementById("chkKoWord").checked;
+      const chkKoMeaning = document.getElementById("chkKoMeaning").checked;
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+
+        // 入力が空なら必ず表示
+        if (keyword === "") {
+          row.style.display = "";
+          return;
+        }
+
+        let match = false;
+        if (chkKoWord && cells[0].textContent.toLowerCase().includes(keyword)) match = true;
+        if (chkKoMeaning && cells[1].textContent.toLowerCase().includes(keyword)) match = true;
+
+        row.style.display = match ? "" : "none";
+      });
+    }
+
+    // イベント登録：検索ボックス入力時
+    document.getElementById("searchKobun").addEventListener("input", filterKobunTable);
+
+    // イベント登録：チェックボックス変更時
+    ["chkKoWord","chkKoMeaning"].forEach(id => {
+      document.getElementById(id).addEventListener("change", filterKobunTable);
+    });
+  </script>
+</body>
+</html>

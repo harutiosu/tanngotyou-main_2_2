@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>単語帳ツール 高2 1学期中間考査編</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; padding-bottom: 50px; padding-top: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    #backBtn {
+    position: fixed;
+    top: 10px;       /* 左上に固定 */
+    left: 10px;
+    width: 40px;     /* 正方形にして丸くする */
+    height: 40px;
+    border-radius: 50%; /* 丸ボタン */
+    border: none;
+    background-color: #eee; /* 背景色はお好みで */
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s;
+    }
+    #backBtn:hover {
+      background-color: #ddd; /* ホバー時の色変化 */
+    }
+  </style>
+</head>
+<body>
+  <!-- 戻るボタン -->
+  <button id="backBtn" onclick="location.href='index.html'">＜</button>
+</body>
+</html>

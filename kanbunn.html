@@ -84,6 +84,7 @@
   <br>
   <button id="checkBtn">OK</button>
   <div id="result" style="margin-top:20px; font-weight:bold;"></div>
+  <div id="meaning" style="margin-top:20px; font-weight: bold; color: red;"></div>
   <button id="nextBtn" style="display:none;">次へ</button>
 
   <div id="modeControls">
@@ -98,10 +99,10 @@
   <script type="module">
     const response = await fetch("wordlist_kan.json");
     const wordPairs = await response.json();
-    console.log(wordPairs);
 
     const questionDiv = document.getElementById("question");
     const resultDiv   = document.getElementById("result");
+    const meaningDiv  = document.getElementById("meaning");
     const nextBtn     = document.getElementById("nextBtn");
 
     // 設定を保存する関数
@@ -146,6 +147,7 @@
     let currentQuestion;
     function showQuestion() {
       resultDiv.textContent = "";
+      meaningDiv.textContent = "";
 
       currentQuestion =
         wordPairs[Math.floor(Math.random() * wordPairs.length)];
@@ -172,6 +174,8 @@
         resultDiv.textContent =
           `不正解… 正解は「${currentQuestion.reading}」`;
       }
+
+      meaningDiv.textContent = currentQuestion.meaning;
 
       updateStats(
         "kanji",

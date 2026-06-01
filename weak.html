@@ -48,6 +48,13 @@
   </table>
 -->
 
+  <h2>漢文(漢字の読み方)</h2>
+  <table>
+    <thead>
+      <tr><th>原文</th><th>意味</th><th>解説</th><th>正答率</th></tr>
+    </thead>
+  </table>
+
   <button id="resetBtn">リセット</button>
   <button id="backBtn" onclick="location.href='index.html'">＜</button>
 
@@ -74,41 +81,49 @@
         : rows.map(r => `<tr><td>${r.word}</td><td>${r.meaning}</td><td>${r.rate}%</td></tr>`).join("");
     }
 
-    // 古文用（kowordをキーに保存済み → answerを意味として表示）
-    function loadKobunStats() {
-      const stats = JSON.parse(localStorage.getItem("stats_kobun")) || {};
-      const tbody = document.getElementById("statsKobun");
-
-      let rows = Object.entries(stats).map(([word, data]) => {
-        const total = data.correct + data.wrong;
-        const rate = total > 0 ? (data.correct / total * 100).toFixed(1) : "0.0";
-        return {
-          word,
-          meaning: data.answer || "(意味未登録)",
-          rate: parseFloat(rate)
-        };
-      });
-
-      rows.sort((a, b) => a.rate - b.rate);
-
-      tbody.innerHTML = rows.length === 0
-        ? "<tr><td colspan='4'>データなし</td></tr>"
-        : rows.map(r => `<tr><td>${r.word}</td><td>${r.meaning}</td><td>${r.rate}%</td></tr>`).join("");
-    }
-
     // リセット処理
     document.getElementById("resetBtn").addEventListener("click", () => {
       if (confirm("苦手単語データをすべて削除しますか？")) {
         localStorage.removeItem("stats_english");
         localStorage.removeItem("stats_kobun");
         loadEnglishStats();
-        loadKobunStats();
       }
     });
 
+    function loadKanjiStats() {
+      const stats = JSON.parse(localStorage.getItem("stats_kanji")) || {};
+      const tbody = document.getElementById("statsKanji");
+
+      let rows = Object.entries(stats).map(([kanji, data]) => {
+        const total = data.correct + data.wrong;
+        const rate = total > 0
+          ? (data.correct / total * 100).toFixed(1)
+          : "0.0";
+
+        return {
+          kanji,
+          reading: data.meaning || "(読み未登録)",
+          rate: parseFloat(rate)
+        };
+      });
+
+      // 正答率が低い順
+      rows.sort((a, b) => a.rate - b.rate);
+
+      tbody.innerHTML = rows.length === 0
+        ? "<tr><td colspan='3'>データなし</td></tr>"
+        : rows.map(r =>
+            `<tr>
+              <td>${r.kanji}</td>
+              <td>${r.reading}</td>
+              <td>${r.rate}%</td>
+            </tr>`
+          ).join("");
+    }
+
     // 初期表示
     loadEnglishStats();
-    loadKobunStats();
+    loadKanjiStats();
   </script>
 </body>
 </html>

@@ -119,12 +119,19 @@
     // 秒数入力変更時に保存
     document.getElementById("autoSeconds").addEventListener("input", saveSettings);
 
-    function updateStats(mode, word, meaning, isCorrect) {
+    //正誤の記録を保存
+    function updateStats(mode, word, isCorrect) {
+
       const key = "stats_" + mode;
+
       let stats = JSON.parse(localStorage.getItem(key)) || {};
-      if (!stats[word]) stats[word] = { meaning: meaning, correct: 0, wrong: 0 };
+
+      if (!stats[word]) {
+        stats[word] = {correct: 0, wrong: 0};
+    }
       if (isCorrect) stats[word].correct++;
       else stats[word].wrong++;
+
       localStorage.setItem(key, JSON.stringify(stats));
     }
 
@@ -154,7 +161,7 @@
           } else {
             resultDiv.textContent = `不正解… 正解は「${question.en}」\n${question.def}\n→ 日本語: ${question.jp}`;
           }
-          updateStats("english", question.en, question.jp, correct);
+          updateStats("english", question.en, correct);
           
           //モードによって次の問題に移る条件を変える
           const mode = document.querySelector('input[name="mode"]:checked').value;

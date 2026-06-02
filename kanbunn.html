@@ -133,17 +133,22 @@
     });
 
     // 秒数入力変更時に保存
-    document.getElementById("autoSeconds").addEventListener("input", saveSettings);
+    function updateStats(mode, word, isCorrect) {
 
-    function updateStats(mode, word, meaning, isCorrect) {
       const key = "stats_" + mode;
+
       let stats = JSON.parse(localStorage.getItem(key)) || {};
-      if (!stats[word]) stats[word] = { meaning: meaning, correct: 0, wrong: 0 };
+
+      if (!stats[word]) {
+        stats[word] = {correct: 0, wrong: 0};
+    }
       if (isCorrect) stats[word].correct++;
       else stats[word].wrong++;
+
       localStorage.setItem(key, JSON.stringify(stats));
     }
 
+    //クイズを出題する
     let currentQuestion;
     function showQuestion() {
       resultDiv.textContent = "";
@@ -160,6 +165,7 @@
       
     }
 
+    //チェックボタン処理
     document.getElementById("checkBtn").addEventListener("click", () => {
       const answer =
         document.getElementById("answerBox").value.trim();
@@ -180,7 +186,6 @@
       updateStats(
         "kanji",
         currentQuestion.kanji,
-        currentQuestion.reading,
         correct
       );
 

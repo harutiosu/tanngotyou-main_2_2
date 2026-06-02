@@ -51,30 +51,41 @@
     <tbody id="statsEnglish"></tbody>
   </table>
 
-  <!--
   <h2>漢文(漢字の読み方)</h2>
   <table>
     <thead>
       <tr><th>原文</th><th>意味</th><th>解説</th><th>正答率</th></tr>
     </thead>
+    <tbody id="statsKanji"></tbody>
   </table>
--->
 
   <button id="resetBtn">リセット</button>
   <button id="backBtn" onclick="location.href='index.html'">＜</button>
 
   <script>
-    // 英単語用
-    function loadEnglishStats() {
+
+    async function loadEnglishStats() {
+
+      const response = await fetch("wordlist_en.json");
+      const wordList = await response.json();
+
       const stats = JSON.parse(localStorage.getItem("stats_english")) || {};
       const tbody = document.getElementById("statsEnglish");
 
-      let rows = Object.entries(stats).map(([word, data]) => {
+      let rows = Object.entries(stats).map(([english, data]) => {
+
         const total = data.correct + data.wrong;
-        const rate = total > 0 ? (data.correct / total * 100).toFixed(1) : "0.0";
+        const rate = total > 0
+          ? (data.correct / total * 100).toFixed(1)
+          : "0.0";
+
+        // JSONから対応する単語を探す
+        const wordData =
+          wordList.find(item => item.en === english);
+
         return {
-          word,
-          meaning: data.meaning || "(意味未登録)",
+          word: english,
+          meaning: wordData?.jp || "(意味未登録)",
           rate: parseFloat(rate)
         };
       });
@@ -83,48 +94,66 @@
 
       tbody.innerHTML = rows.length === 0
         ? "<tr><td colspan='4'>データなし</td></tr>"
-        : rows.map(r => `<tr><td>${r.word}</td><td>${r.meaning}</td><td>${r.rate}%</td></tr>`).join("");
+        : rows.map(r =>
+         `<tr>
+            <td>${r.word}</td>
+            <td>${r.meaning}</td>
+            <td>${r.rate}%</td>
+          </tr>`
+        ).join("");
+    }
+  
+    //漢字用
+    async function loadKanjiStats() {
+
+      const response = await fetch("wordlist_kan.json");
+      const wordList = await response.json();
+
+      const stats = JSON.parse(localStorage.getItem("stats_kanji")) || {};
+      const tbody = document.getElementById("statsKanji");
+
+      let rows = Object.entries(stats).map(([kanji, data]) => {
+
+        const total = data.correct + data.wrong;
+        const rate = total > 0
+          ? (data.correct / total * 100).toFixed(1)
+          : "0.0";
+
+        // JSONから対応する漢字を探す
+        const wordData =
+          wordList.find(item => item.kanji === kanji);
+
+        return {
+          kanji,
+          reading: wordData?.reading || "(読み未登録)",
+          meaning: wordData?.meaning || "(解説なし)",
+          rate: parseFloat(rate)
+        };
+      });
+
+      rows.sort((a, b) => a.rate - b.rate);
+
+      tbody.innerHTML = rows.length === 0
+        ? "<tr><td colspan='4'>データなし</td></tr>"
+        : rows.map(r =>
+            `<tr>
+              <td>${r.kanji}</td>
+              <td>${r.reading}</td>
+              <td>${r.meaning}</td>
+              <td>${r.rate}%</td>
+            </tr>`
+          ).join("");
     }
 
     // リセット処理
     document.getElementById("resetBtn").addEventListener("click", () => {
       if (confirm("苦手単語データをすべて削除しますか？")) {
         localStorage.removeItem("stats_english");
-        localStorage.removeItem("stats_kobun");
+        localStorage.removeItem("stats_kanji");
         loadEnglishStats();
+        loadKanjiStats();
       }
     });
-
-    function loadKanjiStats() {
-      const stats = JSON.parse(localStorage.getItem("stats_kanji")) || {};
-      const tbody = document.getElementById("statsKanji");
-
-      let rows = Object.entries(stats).map(([kanji, data]) => {
-        const total = data.correct + data.wrong;
-        const rate = total > 0
-          ? (data.correct / total * 100).toFixed(1)
-          : "0.0";
-
-        return {
-          kanji,
-          reading: data.meaning || "(読み未登録)",
-          rate: parseFloat(rate)
-        };
-      });
-
-      // 正答率が低い順
-      rows.sort((a, b) => a.rate - b.rate);
-
-      tbody.innerHTML = rows.length === 0
-        ? "<tr><td colspan='3'>データなし</td></tr>"
-        : rows.map(r =>
-            `<tr>
-              <td>${r.kanji}</td>
-              <td>${r.reading}</td>
-              <td>${r.rate}%</td>
-            </tr>`
-          ).join("");
-    }
 
     // 初期表示
     loadEnglishStats();

@@ -26,7 +26,7 @@
     #backBtn:hover {
       background-color: #ddd; /* ホバー時の色変化 */
     }
-    #jumpEnglishBtn, #jumpKobunBtn {
+    #jumpEnglishBtn, #jumpKanjiBtn {
     position: fixed;
     bottom: 10px;
     padding: 8px 16px;
@@ -39,12 +39,12 @@
     color: white;
     cursor: pointer;
     }
-    #jumpEnglishBtn:hover, #jumpKobunBtn:hover{  background-color: #45a049;  }
-    #jumpKobunBtn {
+    #jumpEnglishBtn:hover, #jumpKanjiBtn:hover{  background-color: #45a049;  }
+    #jumpKanjiBtn {
       right: 10px;
     }
     #jumpEnglishBtn {
-      right: 180px;
+      right: 145px;
     }
 
     input[type="text"] {
@@ -79,29 +79,56 @@
     <label><input type="checkbox" id="chkJp" checked> 日本語訳</label>
     <label><input type="checkbox" id="chkDef" checked> 説明</label>
   </div>
-
   
   <table id="wordTableEnglish">
     <thead>
       <tr>
         <th>英単語</th>
         <th>日本語訳</th>
-        <th>説明</th>
+        <th>解説</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
+  <h1>漢文(漢字の読み方)</h1>
+  <input type="text" id="searchKanji" placeholder="🔎漢字を検索..." style="margin-bottom:10px;">
+
+  <div style="margin-bottom:10px;">
+    <label><input type="checkbox" id="chkKan" checked> 漢字</label>
+    <label><input type="checkbox" id="chkRead" checked> 読み方</label>
+    <label><input type="checkbox" id="chkMean" checked> 解説</label>
+  </div>
+
+  <div style="margin-bottom:10px;">
+    <label><input type="checkbox" id="chkExistMean"> 解説がある物のみ表示する</label>
+  </div>
+  
+  <table id="wordTableKanji">
+    <thead>
+      <tr>
+        <th>原文</th>
+        <th>読み方</th>
+        <th>解説</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- ジャンプボタン-->
+   <button id="jumpEnglishBtn">英単語へ</button>
+   <button id="jumpKanjiBtn">漢文へ</button>
+
   <!-- 戻るボタン -->
   <button id="backBtn" onclick="location.href='index.html'">＜</button>
 
   <script type="module">
-    const response = await fetch("wordlist_en.json");
-    const wordPairs = await response.json();
+    const response_en = await fetch("wordlist_en.json");
+    const wordPairs_en = await response_en.json();
 
     // 英単語テーブルを埋める
     const tbodyEng = document.querySelector("#wordTableEnglish tbody");
-    wordPairs.forEach(item => {
+    wordPairs_en.forEach(item => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${item.en}</td>
@@ -146,37 +173,109 @@
       document.getElementById(id).addEventListener("change", filterEnglishTable);
     });
 
-    // 検索処理を関数化
-    function filterKobunTable() {
-      const keyword = document.getElementById("searchKobun").value.trim().toLowerCase();
-      const rows = document.querySelectorAll("#wordTableKobun tbody tr");
+    const response_kan = await fetch("wordlist_kan.json");
+    const wordPairs_kan = await response_kan.json();
 
-      const chkKoWord = document.getElementById("chkKoWord").checked;
-      const chkKoMeaning = document.getElementById("chkKoMeaning").checked;
+    // テーブル作成
+    const tbodyKanji =
+      document.querySelector("#wordTableKanji tbody");
+
+    wordPairs_kan.forEach(item => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${item.kanji}</td>
+        <td>${item.reading}</td>
+        <td>${item.meaning || ""}</td>
+      `;
+
+      tbodyKanji.appendChild(tr);
+    });
+
+    //検索条件に従って絞り込み
+    function filterKanjiTable() {
+
+      const keyword =
+        document.getElementById("searchKanji")
+          .value.trim();
+
+      const rows =
+        document.querySelectorAll("#wordTableKanji tbody tr");
+
+      const chkKan =
+        document.getElementById("chkKan").checked;
+
+      const chkRead =
+        document.getElementById("chkRead").checked;
+
+      const chkMean =
+        document.getElementById("chkMean").checked;
+
+      const chkExistMean =
+        document.getElementById("chkExistMean").checked;
 
       rows.forEach(row => {
+
         const cells = row.querySelectorAll("td");
 
-        // 入力が空なら必ず表示
+        const kanji = cells[0].textContent;
+        const reading = cells[1].textContent;
+        const meaning = cells[2].textContent;
+
+        // 解説があるもののみ表示
+        if (
+          chkExistMean &&
+          (
+            meaning.trim() === "" ||
+            meaning === "(解説なし)"
+          )
+        ) {
+          row.style.display = "none";
+          return;
+        }
+
+        // 検索欄が空なら表示
         if (keyword === "") {
           row.style.display = "";
           return;
         }
 
         let match = false;
-        if (chkKoWord && cells[0].textContent.toLowerCase().includes(keyword)) match = true;
-        if (chkKoMeaning && cells[1].textContent.toLowerCase().includes(keyword)) match = true;
+
+        if (chkKan && kanji.includes(keyword))
+          match = true;
+
+        if (chkRead && reading.includes(keyword))
+          match = true;
+
+        if (chkMean && meaning.includes(keyword))
+          match = true;
 
         row.style.display = match ? "" : "none";
       });
     }
+    filterKanjiTable();
 
-    // イベント登録：検索ボックス入力時
-    document.getElementById("searchKobun").addEventListener("input", filterKobunTable);
+    document.getElementById("searchKanji")
+      .addEventListener("input", filterKanjiTable);
 
-    // イベント登録：チェックボックス変更時
-    ["chkKoWord","chkKoMeaning"].forEach(id => {
-      document.getElementById(id).addEventListener("change", filterKobunTable);
+    [
+      "chkKan",
+      "chkRead",
+      "chkMean",
+      "chkExistMean"
+    ].forEach(id => {
+      document.getElementById(id)
+        .addEventListener("change", filterKanjiTable);
+    });
+
+    // スムーズスクロールでジャンプ
+    document.getElementById("jumpEnglishBtn").addEventListener("click", () => {
+      document.getElementById("wordTableEnglish").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("jumpKanjiBtn").addEventListener("click", () => {
+      document.getElementById("wordTableKanji").scrollIntoView({ behavior: "smooth" });
     });
   </script>
 </body>

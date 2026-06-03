@@ -83,7 +83,6 @@
     const response = await fetch("wordlist_en.json");
     const wordPairs = await response.json();
 
-    const weakWords = getWeakWords(50); // 正答率50％未満を対象
     const questionDiv = document.getElementById("question");
     const choicesDiv  = document.getElementById("choices");
     const resultDiv   = document.getElementById("result");
@@ -145,6 +144,9 @@
   }
 
   function showQuestion() {
+
+    const weakWords = getWeakWords(50); // 正答率50％未満を対象
+        
     resultDiv.textContent = "";
     choicesDiv.innerHTML = "";
 
